@@ -66,6 +66,7 @@ test_oot3 <- function() {
 }
 
 ## 使用最新的数据（截止到2015年10月的
+source("gmmhmm.R")
 test_oot4 <- function() {
   data <- read.csv("data/Index_3.csv")
   benchmark <- as.xts(data[, 2:4], order.by=strptime(data[,1], format="%Y/%m/%d", tz=""))
@@ -82,24 +83,88 @@ test_oot4 <- function() {
   ret_hs300_ema2 <- Return.calculate(TTR::EMA(benchmark[,2], 2))
   ret_hs300_ema5 <- Return.calculate(TTR::EMA(benchmark[,2], 5))
   
+  rsi <- TTR::RSI(ret_zz500 - ret_hs300);
+  macd <- TTR::MACD(ret_zz500 - ret_hs300);
   
-  data_oot4 <- cbind.xts(ret_zz500, ret_zz500 - ret_hs300, #ret_zz500 - ret_hengsheng,
-                         ret_zz500_ema2, ret_zz500_ema5,
+  data_oot4 <- cbind.xts(ret_zz500 , ret_hs300 #ret_hs300 - ret_hengsheng,
+                         #ret_hs300_ema2, ret_hs300_ema5, ret_zz500_ema2
                          #           Return.calculate(TTR::EMA(benchmark[, 2]), 2),
-                         lag(ret_zz500, 1), lag(ret_zz500, 5));  
+                         # rsi, macd$macd - macd$signal
+                         );  
   data_oot4 <- na.omit(data_oot4)
-  ret_oot4 <- gmmhmm(dataset = data_oot4, ret_target = data_oot4[, 1], n_start = 1000, n_state = 5)
+  ret_oot4 <- gmmhmm(dataset = data_oot4, ret_target = data_oot4[, 1], n_start = 1500, n_state = 5)
   rbind(table.AnnualizedReturns(ret_oot4), SharpeRatio(ret_oot4), maxDrawdown(ret_oot4))
   write.csv(as.data.frame(ret), 'test_results/oot4.csv')
   
   
 }
 
+## 测试5分钟股指期货
+source("gmmhmm.R")
+test_oot5 <- function() {
+  data <- read.csv("data/Future_5min.csv")
+  benchmark <- na.omit(as.xts(data[, 2:4], order.by=strptime(data[,1], format="%Y/%m/%d %H:%M", tz="")))
+  benchmark_w <- benchmark[endpoints(benchmark, on = "weeks")]
+  benchmark_ret <- na.omit(Return.calculate(benchmark, method = "discrete"))
+  benchmark_ret_w <- na.omit(Return.calculate(benchmark_w, method="discrete"))
+  
+  ret_hs300 <- benchmark_ret[, 1]
+  ret_zz500 <- benchmark_ret[, 2]
+  ret_sz50 <- benchmark_ret[, 3]
+  
+  ret_hs300_ema2 <- Return.calculate(TTR::EMA(benchmark[,1], 2))
+  ret_hs300_ema5 <- Return.calculate(TTR::EMA(benchmark[,1], 5))
+  ret_zz500_ema2 <- Return.calculate(TTR::EMA(benchmark[,2], 2))
+  ret_zz500_ema5 <- Return.calculate(TTR::EMA(benchmark[,2], 5))
+  
+  rsi <- TTR::RSI(ret_zz500 - ret_hs300);
+  macd <- TTR::MACD(ret_zz500 - ret_hs300);
+  
+  data_oot4 <- na.omit(cbind.xts(ret_zz500, ret_zz500 - ret_hs300, ret_zz500 - ret_hengsheng,
+                         ret_zz500_ema2, ret_zz500_ema5
+                         #           Return.calculate(TTR::EMA(benchmark[, 2]), 2),
+                         ))
+  data_oot4 <- na.omit(data_oot4)
+  ret_oot4 <- gmmhmm1(dataset = data_oot4, ret_target = data_oot4[, 1], n_start = 2000, n_state = 0)
+  rbind(table.AnnualizedReturns(ret_oot4), SharpeRatio(ret_oot4), maxDrawdown(ret_oot4))
+  write.csv(as.data.frame(ret), 'test_results/oot5.csv')
+  
+  
+}
 
-### running tests
-data <- load_data();
-benchmark <- data$benchmark;
-benchmark_ret <- data$benchmark_ret;Date
 
-rets <- test_oot2();
+
+##########################################################################
+###  利用全新的指数数据
+source("gmmhmm.R")
+test_new1 <- function() {
+  data <- read.csv("data/Index_3.csv")
+  benchmark <- as.xts(data[, 2:4], order.by=strptime(data[,1], format="%Y/%m/%d", tz=""))
+  benchmark_w <- benchmark[endpoints(benchmark, on = "weeks")]
+  benchmark_ret <- na.omit(Return.calculate(benchmark, method = "discrete"))
+  benchmark_ret_w <- na.omit(Return.calculate(benchmark_w, method="discrete"))
+  
+  ret_zz500 <- benchmark_ret[, 1]
+  ret_hs300 <- benchmark_ret[, 2]
+  ret_hengsheng <- benchmark_ret[, 3]
+  
+  ret_zz500_ema2 <- Return.calculate(TTR::EMA(benchmark[,1], 2))
+  ret_zz500_ema5 <- Return.calculate(TTR::EMA(benchmark[,1], 5))
+  ret_hs300_ema2 <- Return.calculate(TTR::EMA(benchmark[,2], 2))
+  ret_hs300_ema5 <- Return.calculate(TTR::EMA(benchmark[,2], 5))
+  
+  rsi <- TTR::RSI(ret_zz500 - ret_hs300);
+  macd <- TTR::MACD(ret_zz500 - ret_hs300);
+  
+  data_new1 <- cbind.xts(ret_hs300 #ret_hs300 - ret_hengsheng,
+                         #ret_hs300_ema2, ret_hs300_ema5, ret_zz500_ema2
+                         #           Return.calculate(TTR::EMA(benchmark[, 2]), 2),
+                         # rsi, macd$macd - macd$signal
+  );  
+  data_new1 <- na.omit(data_new1)
+  ret_new1 <- gmmhmm(dataset = data_new1, ret_target = data_new1[, 1], n_start = 1500, n_state = 5)
+  rbind(table.AnnualizedReturns(ret_new1), SharpeRatio(ret_new1), maxDrawdown(ret_new1))
+  write.csv(as.data.frame(ret), 'test_results/new1.csv')
+}
+test_new1()
 
