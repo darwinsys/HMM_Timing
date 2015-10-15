@@ -627,8 +627,9 @@ gmmhmm2 <- function(dataset, ret_target, n_start, n_state = 0) {
 
 
 regime_gmmhmm <- function(price_data, target_index = 1, nstate = 0) {
-  price <- na.omit(price_data);
-  ret <- ROC(price, n = 1, type = "continuous")
+  prices <- na.omit(price_data);
+  ret <- ROC(prices, n = 1, type = "continuous")
+  #ret <- Return.calculate(prices[endpoints(prices, on=period)], method = "log")
   ret <- na.omit(ret)
   gmm <- gmm_training(ret, nstate) # GMM 捕捉指定数量的市场状态， 并生成相应的参数；
   hmm <- hmm_training(gmm, data_training = ret, ret_target = ret[, target_index])
