@@ -69,20 +69,20 @@ test_oot4 <- function() {
                           
   )
   data_oot4 <- na.omit(data_oot4);
-  ret <- gmmhmm2(dataset=data_oot4, ret_target=ret_zz500_d[index(data_oot4)], n_start=1000, n_state=5)
+  ret <- gmmhmm2(dataset=data_oot4, ret_target=ret_zz500_d[index(data_oot4)], n_start=1500, n_state=5)
 }
 
 test_oot5 <- function() {
   source("gmmhmm.R")
   data_oot5 <- cbind.xts( TTR::ROC(zz500, n = 1),
-                          TTR::ROC(zz500, n = 2), 
-                          TTR::ROC(hs300, n = 2),
-                          TTR::ROC(zz500, n = 5), 
-                          TTR::ROC(hs300, n = 5)
+                          TTR::ROC(zz500, n = 2) / 2, 
+                          TTR::ROC(hs300, n = 2) / 2,
+                          TTR::ROC(zz500, n = 5) / 5, 
+                          TTR::ROC(zz500, n = 20)
                           
   )
   data_oot5 <- na.omit(data_oot5);
-  ret <- gmmhmm2(dataset=data_oot5, ret_target=ret_zz500_d[index(data_oot5)], n_start=500, n_state=5)
+  ret <- gmmhmm2(dataset=data_oot5, ret_target=ret_zz500_d[index(data_oot5)], n_start=1500, n_state=5)
 }
 
 

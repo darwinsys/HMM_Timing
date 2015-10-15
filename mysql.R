@@ -30,15 +30,17 @@ mysql_fund_values <- function(fund_codes, start_date, end_date){
     
   }
   
-  rows <- result$fv_time
-  cols <- fund_codes
-  res = result[1:dim(result)[1], 2:dim(result)[2]]
-  dimnames(res) <- list(rows, cols)
+  nr_fund <- length(fund_codes)
+  
+  output <- as.xts(result[, 2:(nr_fund+1)], order.by=strptime(result[,1],
+                              format="%Y-%m-%d", tz=""))
+  colnames(output) <- fund_codes
+  
   
   dbDisconnect(conn);
-  return(res);
+  return(output);
 }
 
-fund_codes <- c(160119, 000051, 000216, 050025, 000071)
-res <- mysql_fund_values(fund_codes,'2015-09-30','2015-10-13')
-print(res)
+#fund_codes <- c(160119, 000051, 000216, 050025, 000071)
+#res <- mysql_fund_values(fund_codes,'2015-09-30','2015-10-13')
+#print(res)
