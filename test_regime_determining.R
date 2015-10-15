@@ -36,7 +36,7 @@ rbind(table.AnnualizedReturns(ret_regimes), table.Distributions(ret_regimes), ma
 source('gmmhmm.R')
 source('mysql.R')
 
-fund_codes <- c(160119)
+fund_codes <- c(000051, 160119)
 start_date <- '2010-01-01'
 end_date <- '2015-10-14'
 res <- mysql_fund_values(fund_codes, start_date, end_date) 
@@ -44,3 +44,15 @@ res <- res[1:1404]
 
 hmm <- regime_gmmhmm(res, 3)
 print(hmm)
+
+
+
+regime_gmmhmm <- function(price_data, target_index = 1, nstate = 0) {
+  price <- na.omit(price_data);
+  ret <- ROC(price, n = 1, type = "continuous")
+  ret <- na.omit(ret)
+  gmm <- gmm_training(ret, nstate) # GMM 捕捉指定数量的市场状态， 并生成相应的参数；
+  hmm <- hmm_training(gmm, data_training = ret, ret_target = ret[, target_index])
+  return(hmm)
+  
+}
