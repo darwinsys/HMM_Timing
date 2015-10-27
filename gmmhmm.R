@@ -113,6 +113,29 @@ gmm_insample_test <- function(dataset_train, benchmark_train, ret_train) {
 
 
 ##################################################################################
+hmm_training2 <- function(gmm, data_training) {
+  output <- list();
+  
+  ### determine whether training dataset is a single serie or multiples
+  n_serie <- ncol(data_training)  
+  
+  #### training HMM model
+  if (n_serie == 1) {
+    hmm_model <- hmmspec(init=gmm$initial, trans=gmm$P, parms.emission = gmm$b, dens.emission = dnorm.hsmm)
+    hmm_fitted <- hmmfit(as.numeric(data_training), hmm_model, mstep = mstep.norm)
+  }
+  else {
+    hmm_model <- hmmspec(init=gmm$initial, trans=gmm$P, parms.emission = gmm$b, dens.emission = dmvnorm.hsmm)
+    hmm_fitted <- hmmfit(data_training, hmm_model, mstep = mstep.mvnorm)
+  }
+  #print("hmm fitting")
+  #### Predict future regime
+  regime <- tail(hmm_fitted$yhat, 1);
+  output$hmm <- hmm_fitted
+  
+  return(output) 
+}
+##################################################################################
 hmm_training <- function(gmm, data_training, data_testing = NULL, ret_target) {
   output <- list();
   

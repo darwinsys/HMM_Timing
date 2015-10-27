@@ -49,15 +49,28 @@ ret_zz500_w_5d <- na.omit(zz500_w / lag(zz500_w, 5) - 1)
 ret_zz500_spread <- ret_zz500_d - lag(ret_zz500_d, 1);
 
 
+## Testing out-of-sample for 5ETF portfolio returns
+########################################################
+source("gmmhmm.R")
+data <- read.csv("data/portfolio_5etfs_ret_0.0008_weekly.csv")
+benchmark <- na.omit(as.xts(data[, 2:7], order.by=strptime(data[,1], format="%Y-%m-%d", tz="")))
+portfolio <- benchmark[, 1]
+
+data_1 <- cbind(portfolio, lag(portfolio, 1), lag(portfolio, 5))
+data_1 <- na.omit(data_1)
+ret <- gmmhmm1(dataset=data_1, ret_target=data_1[, 1], n_start=1000, n_state = 5)
+
+
+
+
 #######################################################
 test_oot3 <- function() {
   source("gmmhmm.R")
   data_oot3 <- cbind.xts( TTR::ROC(zz500, n = 1),
                           TTR::ROC(zz500, n = 2), 
                           TTR::ROC(hs300, n = 2)
-                          
     )
-  data_oot3 <- na.omit(data_oot3);
+  data_oot3 <- na.omit(data_oot3[is.infinite(data_oot3[,1]) == FALSE]);
   ret <- gmmhmm2(dataset=data_oot3, ret_target=ret_zz500_d[index(data_oot3)], n_start=1000, n_state=5)
 }
 
@@ -79,6 +92,7 @@ test_oot5 <- function() {
                           TTR::ROC(hs300, n = 2) / 2,
                           TTR::ROC(zz500, n = 5) / 5, 
                           TTR::ROC(zz500, n = 20)
+                          
                           
   )
   data_oot5 <- na.omit(data_oot5);

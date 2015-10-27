@@ -36,16 +36,19 @@ rbind(table.AnnualizedReturns(ret_regimes), table.Distributions(ret_regimes), ma
 source('gmmhmm.R')
 source('mysql.R')
 
-fund_codes <- c(000051, 160119)
-start_date <- '2010-01-01'
-end_date <- '2015-10-14'
+#fund_codes <- c(000051, 160119)
+fund_codes <- c(000051)
+start_date <- '2005-01-01'
+end_date <- '2015-10-13'
 res <- mysql_fund_values(fund_codes, start_date, end_date) 
-res <- res[1:1404]
+#res <- res[1:1404]
 
 
 res_weekly <- res[endpoints(res, on = "weeks")]
 hmm <- regime_gmmhmm(res_weekly, 1, 3)
-print(hmm)
+
+res_total <- na.omit(cbind.xts(hmm$hmm_ret_regime, ROC(res_weekly, 1)))
+charts.PerformanceSummary(res_total)
  
 
 
